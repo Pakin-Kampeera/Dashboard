@@ -11,14 +11,13 @@ const register = async (req, res, next) => {
       email,
       password,
     });
+
     await user.save((err) => {
       if (err) return console.error(err);
       console.log('Document is inserted');
     });
-    res.status(201).json({
-      success: true,
-      user,
-    });
+
+    sendToken(user, '201', res);
   } catch (error) {
     next(error);
   }
@@ -44,16 +43,37 @@ const login = async (req, res, next) => {
     if (!isMatch) {
       return next(new ErrorResponse('Invalid credentials', 401));
     }
-
-    res.status('200').json({ success: true, token: 'kjfso8wjks234' });
+    sendToken(user, '200', res);
   } catch (error) {
     res.status('500').json({ success: false, error: error.messages });
   }
 };
 
 // MongoDB user forgot password handler
-const forgotPassword = (req, res, next) => {
-  res.send('Forgot Password Route');
+const forgotPassword = async (req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    const user = User.findOne({ email });
+
+    if (!email) {
+      return next(new ErrorResponse('Email could not be sent', 404));
+    }
+
+    const resetToken = user.getResetPasswordToken();
+
+    await user.save();
+
+    const resetUrl = `http://localhost:${process.env.PORT}/passwordReset/${resetToken}`;
+
+    const message = `
+      <h1>You have requested a password reset</h1>
+      <p>Please go to this link to reset your password</p>
+      <a href='${resetUrl}' clicktracking='off'>Reset</a>
+    `;
+  } catch (error) {
+    res.status('500').json({ success: false, error: error.messages });
+  }
 };
 
 // MongoDB user reset password handler
@@ -61,9 +81,10 @@ const resetPassword = (req, res, next) => {
   res.send('Reset Password Route');
 };
 
-const sendToken = (user, statusCode, res) => {
-  const token = user.getSignedToken()
-}
+const sendToken = async (user, statusCode, res) => {
+  const token = await user.getSignedToken();
+  res.status(statusCode).json({ success: true, token });
+};
 
 module.exports = {
   register,

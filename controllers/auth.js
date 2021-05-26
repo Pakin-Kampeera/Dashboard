@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
+const sendEmail = require('../utils/sendEmail');
+const crypto = require('crypto');
 
 // MongoDB user register handler
 const register = async (req, res, next) => {
@@ -12,11 +14,7 @@ const register = async (req, res, next) => {
       password,
     });
 
-    await user.save((err) => {
-      if (err) return console.error(err);
-      console.log('Document is inserted');
-    });
-
+    await user.save();
     sendToken(user, '201', res);
   } catch (error) {
     next(error);
@@ -54,9 +52,9 @@ const forgotPassword = async (req, res, next) => {
   const { email } = req.body;
 
   try {
-    const user = User.findOne({ email });
+    const user = await User.findOne({ email });
 
-    if (!email) {
+    if (!user) {
       return next(new ErrorResponse('Email could not be sent', 404));
     }
 
@@ -64,21 +62,56 @@ const forgotPassword = async (req, res, next) => {
 
     await user.save();
 
-    const resetUrl = `http://localhost:${process.env.PORT}/passwordReset/${resetToken}`;
+    const resetUrl = `http://localhost:${process.env.PORT}/resetPassword/${resetToken}`;
 
     const message = `
       <h1>You have requested a password reset</h1>
       <p>Please go to this link to reset your password</p>
-      <a href='${resetUrl}' clicktracking='off'>Reset</a>
+      <a href='${resetUrl}' clicktracking='off'>${resetUrl}</a>
     `;
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Password Reset Request',
+        text: message,
+      });
+
+      res.status(200).json({ success: true, data: 'Email Sent' });
+    } catch (error) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save();
+
+      return next(new ErrorResponse('Email could not be send', 500));
+    }
   } catch (error) {
-    res.status('500').json({ success: false, error: error.messages });
+    next(error);
   }
 };
 
 // MongoDB user reset password handler
-const resetPassword = (req, res, next) => {
-  res.send('Reset Password Route');
+const resetPassword = async (req, res, next) => {
+  const resetPasswordToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+
+  try {
+    const user = await User.findOne({ resetPasswordToken, resetPasswordExpire: { $gt: Date.now() } });
+
+    if (!user) {
+      return next(new ErrorResponse('Invalid Reset Token', 400));
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(201).json({ success: true, data: 'Password Reset Success' });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const sendToken = async (user, statusCode, res) => {

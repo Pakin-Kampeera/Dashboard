@@ -53,7 +53,6 @@ const forgotPassword = async (req, res, next) => {
 
   try {
     const user = await User.findOne({ email });
-
     if (!user) {
       return next(new ErrorResponse('Email could not be sent', 404));
     }
@@ -65,16 +64,17 @@ const forgotPassword = async (req, res, next) => {
     const resetUrl = `http://localhost:${process.env.PORT}/resetPassword/${resetToken}`;
 
     const message = `
-      <h1>You have requested a password reset</h1>
-      <p>Please go to this link to reset your password</p>
-      <a href='${resetUrl}' clicktracking='off'>${resetUrl}</a>
+    <h1>You have requested a password reset</h1>
+    <p>Please go to this link to reset your password</p>
+    <a href='${resetUrl}' clicktracking='off'>${resetUrl}</a>
     `;
 
     try {
       await sendEmail({
+        from: 'Stress Detection',
         to: user.email,
         subject: 'Password Reset Request',
-        text: message,
+        html: message,
       });
 
       res.status(200).json({ success: true, data: 'Email Sent' });

@@ -1,28 +1,14 @@
-const nodemailer = require('nodemailer');
+const mailgun = require('mailgun-js');
 
 const sendEmail = (options) => {
-  const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE,
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
+  const mg = mailgun({ apiKey: process.env.MAILGUN_APIKEY, domain: process.env.MAILGUN_DOMAIN });
+  const data = {
+    from: `${options.from} ${process.env.MAILGUN_FROM}`,
     to: options.to,
     subject: options.subject,
-    html: options.text,
+    html: options.html,
   };
-
-  transporter.sendMail(mailOptions, function (err, info) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(info);
-    }
-  });
+  mg.messages().send();
 };
 
-module.exports = { sendEmail };
+module.exports = sendEmail;

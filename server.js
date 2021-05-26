@@ -3,12 +3,8 @@ const express = require('express');
 const connectDB = require('./config/db');
 const path = require('path');
 const errorHandler = require('./middleware/error');
-const cors = require('cors');
 
 const app = express();
-
-app.use(cors());
-
 app.use(express.json());
 
 // Connect MongoDB
@@ -38,7 +34,7 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
   });
 } else {
-  app.get('/', (req, res) => {
-    res.send('API running');
-  });
+  // app.get('/', (req, res) => {
+  //   res.send('API running');
+  // });
 }

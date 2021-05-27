@@ -8,7 +8,7 @@ const sendEmail = (options) => {
     subject: options.subject,
     html: options.html,
   };
-  mg.messages().send();
+  mg.messages().send(data);
 };
 
 module.exports = sendEmail;

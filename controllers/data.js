@@ -1,5 +1,5 @@
-const getPrivateData = (req, res, next) => {
+const getData = (req, res, next) => {
   res.status(200).json({ success: true, data: 'You got access to the private data in this route' });
 };
 
-module.exports = getPrivateData;
+module.exports = getData;

@@ -6,11 +6,11 @@ const errorHandler = (err, req, res, next) => {
   error.message = err.message;
 
   if (err.code === 11000) {
-    const message = 'Duplicate Field Value Enter';
+    const message = 'This email is already used';
     error = new ErrorResponse(message, 400);
   }
 
-  if (err.name === 'ValidationError') {
+  if (err.name === 'Validation Error') {
     const message = Object.values(err.errors).map((val) => val.message);
     error = new ErrorResponse(message, 400);
   }

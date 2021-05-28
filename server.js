@@ -23,7 +23,7 @@ connectDB();
 
 // Authentication route
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/private', require('./routes/private'));
+app.use('/api/data', require('./routes/dashboard'));
 
 // Error handler middleware
 app.use(errorHandler);

@@ -3,9 +3,20 @@ const express = require('express');
 const connectDB = require('./config/db');
 const path = require('path');
 const errorHandler = require('./middleware/error');
-
 const app = express();
+
 app.use(express.json());
+
+// Heroku setup
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '/client/build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+  });
+} else {
+  const cors = require('cors');
+  app.use(cors());
+}
 
 // Connect MongoDB
 connectDB();
@@ -26,15 +37,3 @@ process.on('unhandledRejection', (error, promise) => {
   console.log(`Logged Error: ${error}`);
   server.close(() => process.exit(1));
 });
-
-// Heroku setup
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '/client/build')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
-  });
-} else {
-  // app.get('/', (req, res) => {
-  //   res.send('API running');
-  // });
-}

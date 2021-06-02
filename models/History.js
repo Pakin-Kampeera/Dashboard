@@ -1,24 +1,36 @@
 const mongoose = require('mongoose');
 
-const HistorySchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-  },
-  text: {
-    type: String,
-    required: true,
-  },
-  label: {
-    type: String,
-    required: true,
-  },
-  confidence: {
-    type: String,
-    required: true,
-  },
+mongoose.connect(process.env.MONGO_URI, {
+  useCreateIndex: true,
+  useFindAndModify: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
-const History = mongoose.model('History', HistorySchema);
+const History = mongoose.model(
+  'histories',
+  new mongoose.Schema(
+    {
+      userId: {
+        type: String,
+        required: true,
+      },
+      text: {
+        type: String,
+        required: true,
+      },
+      labels: {
+        type: String,
+        required: true,
+      },
+      confidence: {
+        type: String,
+        required: true,
+      },
+    },
+    { timestamps: { currentTime: () => Math.floor(Date.now() / 1000) } }
+  ),
+  'histories'
+);
 
 module.exports = History;

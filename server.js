@@ -11,6 +11,19 @@ const cors = require('cors');
 const path = require('path');
 const errorHandler = require('./middleware/error');
 
+const History = require('./models/History');
+
+const historyChangeStream = History.watch();
+
+historyChangeStream.on('change', (change) => {
+  io.emit('new-History', change.fullDocument);
+});
+
+// Connect socket
+io.on('connection', (socket) => {
+  console.log('Socket connected');
+});
+
 const PORT = process.env.PORT || 2000;
 
 app.use(cors());
@@ -22,11 +35,6 @@ connectDB();
 // Route setup
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/data', require('./routes/dashboard'));
-
-// Connect socket
-io.on('connection', (socket) => {
-  console.log('Socket connected');
-});
 
 // Error handler middleware
 app.use(errorHandler);

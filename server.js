@@ -11,7 +11,7 @@ const cors = require('cors');
 const path = require('path');
 const errorHandler = require('./middleware/error');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 2000;
 
 app.use(cors());
 app.use(express.json());

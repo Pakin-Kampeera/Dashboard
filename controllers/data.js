@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-// const History = require('../models/History');
+const History = require('../models/History');
 const ErrorResponse = require('../utils/errorResponse');
 const io = require('socket.io');
 
@@ -11,8 +11,8 @@ const io = require('socket.io');
 // });
 
 const getData = async (req, res, next) => {
-  const data = await History.find({});
-  res.status(200).json({ success: true, data: data });
+  const history = await History.find();
+  res.status(200).json({ success: true, data: history });
 };
 
 const getUsers = (req, res, next) => {};

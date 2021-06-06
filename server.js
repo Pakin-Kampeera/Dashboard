@@ -16,6 +16,7 @@ const History = require('./models/History');
 const historyChangeStream = History.watch();
 
 historyChangeStream.on('change', (change) => {
+  console.log(change)
   io.emit('new-History', change.fullDocument);
 });
 

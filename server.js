@@ -12,20 +12,26 @@ const path = require('path');
 const errorHandler = require('./middleware/error');
 
 const History = require('./models/History');
+const Data = require('./models/Data');
+
+// Connect socket
+io.on('connection', () => {
+  console.log('Socket connected');
+});
 
 const historyChangeStream = History.watch();
 
 historyChangeStream.on('change', (change) => {
-  console.log(change)
+  // console.log(change);
   io.emit('new-History', change.fullDocument);
 });
 
-// Connect socket
-io.on('connection', (socket) => {
-  console.log('Socket connected');
-});
+const dataChangeStream = Data.watch();
 
-const PORT = process.env.PORT || 2000;
+dataChangeStream.on('change', (change) => {
+  console.log(change);
+  io.emit('new-Data', change);
+});
 
 app.use(cors());
 app.use(express.json());
@@ -41,6 +47,7 @@ app.use('/api/data', require('./routes/dashboard'));
 app.use(errorHandler);
 
 // Serve Restful API
+const PORT = process.env.PORT || 2000;
 const server = http.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Server crash handler

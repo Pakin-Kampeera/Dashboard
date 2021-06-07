@@ -1,23 +1,32 @@
 const mongoose = require('mongoose');
 
-const DataSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-  },
-  sentences: [
-    {
-      text: { type: String, required: true },
-      label: { type: String, required: true },
-      confidence: { type: String, required: true },
-    },
-  ],
-  Date: {
-    type: Date,
-    required: true,
-  },
+mongoose.connect(process.env.MONGO_URI, {
+  useCreateIndex: true,
+  useFindAndModify: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
-const Data = mongoose.model('Data', DataSchema);
+const Data = mongoose.model(
+  'datas',
+  new mongoose.Schema(
+    {
+      users: {
+        type: Number,
+      },
+      comments: {
+        type: Number,
+      },
+      stress: {
+        type: Number,
+      },
+      non_stress: {
+        type: Number,
+      },
+    },
+    { timestamps: { currentTime: () => Math.floor(Date.now() / 1000) } }
+  ),
+  'datas'
+);
 
 module.exports = Data;

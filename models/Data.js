@@ -20,7 +20,7 @@ const Data = mongoose.model(
       stress: {
         type: Number,
       },
-      non_stress: {
+      nonStress: {
         type: Number,
       },
     },

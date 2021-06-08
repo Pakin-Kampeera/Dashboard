@@ -22,7 +22,6 @@ io.on('connection', () => {
 const historyChangeStream = History.watch();
 
 historyChangeStream.on('change', (change) => {
-  // console.log(change);
   io.emit('new-History', change.fullDocument);
 });
 
@@ -30,7 +29,13 @@ const dataChangeStream = Data.watch();
 
 dataChangeStream.on('change', (change) => {
   console.log(change);
-  io.emit('new-Data', change);
+  if (change.operationType === 'insert') {
+    console.log('emit insert');
+    io.emit('new-Data', change.fullDocument);
+  } else {
+    console.log('emit update');
+    io.emit('new-Data', change.updateDescription.updatedFields);
+  }
 });
 
 app.use(cors());

@@ -22,6 +22,7 @@ io.on('connection', () => {
 const historyChangeStream = History.watch();
 
 historyChangeStream.on('change', (change) => {
+  console.log(change)
   io.emit('new-History', change.fullDocument);
 });
 

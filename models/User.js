@@ -8,6 +8,8 @@ const UserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, 'Please provide a username'],
+    minlength: 4,
+    maxlength: 32,
   },
   email: {
     type: String,
@@ -21,6 +23,12 @@ const UserSchema = new mongoose.Schema({
     minlength: 8,
     select: false,
   },
+  isVerified: {
+    type: Boolean,
+    select: false,
+  },
+  verifiedEmailToken: String,
+  verifiedEmailExpire: String,
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 });
@@ -51,6 +59,17 @@ UserSchema.methods.getResetPasswordToken = function () {
   this.resetPasswordExpire = Date.now() + 10 * (60 * 1000);
 
   return resetToken;
+};
+
+// Assign verify token
+UserSchema.methods.getVerifiedToken = function () {
+  const verifyToken = crypto.randomBytes(20).toString('hex');
+
+  this.isVerified = false;
+  this.verifiedEmailToken = crypto.createHash('sha256').update(verifyToken).digest('hex');
+  this.verifiedEmailExpire = Date.now() + 10 * (60 * 1000);
+
+  return verifyToken;
 };
 
 // Create user model

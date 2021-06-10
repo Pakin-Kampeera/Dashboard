@@ -14,8 +14,57 @@ const register = async (req, res, next) => {
       password,
     });
 
+    const verifyToken = user.getVerifiedToken();
+
     await user.save();
-    sendToken(user, '201', res);
+
+    const verifiedUrl = `http://localhost:3000/verifiedEmail/${verifyToken}`;
+
+    const message = `
+    <h1>You have requested a new account</h1>
+    <p>Please go to this link to verify your email</p>
+    <a href='${verifiedUrl}' clicktracking='off'>${verifiedUrl}</a>
+    `;
+
+    try {
+      await sendEmail({
+        from: 'Stress Detection',
+        to: user.email,
+        subject: 'Password Verify Email',
+        html: message,
+      });
+
+      res.status(200).json({ success: true, data: 'Email Sent' });
+    } catch (error) {
+      return next(new ErrorResponse('Email could not be send', 500));
+    }
+  } catch (error) {
+    user.isVerified = undefined;
+    user.verifiedEmailToken = undefined;
+    user.verifiedEmailExpire = undefined;
+
+    await user.save();
+    next(error);
+  }
+};
+
+const verifiedEmail = async (req, res, next) => {
+  const verifiedEmailToken = crypto.createHash('sha256').update(req.params.verifiedToken).digest('hex');
+
+  try {
+    const user = await User.findOne({ verifiedEmailToken, verifiedEmailExpire: { $gt: Date.now() } });
+
+    if (!user) {
+      return next(new ErrorResponse('Invalid Verified Token', 400));
+    }
+
+    user.isVerified = true;
+    user.verifiedEmailToken = undefined;
+    user.verifiedEmailExpire = undefined;
+
+    await user.save();
+
+    res.status(201).json({ success: true, data: 'Email Verify Success' });
   } catch (error) {
     next(error);
   }
@@ -30,10 +79,14 @@ const login = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findOne({ email }).select('password');
+    const user = await User.findOne({ email }).select('password isVerified');
 
     if (!user) {
       return next(new ErrorResponse('Invalid credentials', 401));
+    }
+
+    if (!user.isVerified) {
+      return next(new ErrorResponse('Please verify password', 401));
     }
 
     const isMatch = await user.matchPassword(password);
@@ -121,6 +174,7 @@ const sendToken = async (user, statusCode, res) => {
 
 module.exports = {
   register,
+  verifiedEmail,
   login,
   forgotPassword,
   resetPassword,

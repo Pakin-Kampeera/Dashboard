@@ -2,9 +2,11 @@ const express = require('express');
 
 const router = express.Router();
 
-const { register, login, forgotPassword, resetPassword } = require('../controllers/auth');
+const { register, verifiedEmail, login, forgotPassword, resetPassword } = require('../controllers/auth');
 
 router.route('/register').post(register);
+
+router.route('/verifiedEmail/:verifiedToken').put(verifiedEmail);
 
 router.route('/login').post(login);
 

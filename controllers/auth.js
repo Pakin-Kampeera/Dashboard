@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
-const sendEmail = require('../utils/sendEmail');
+const sendResetPassword = require('../utils/sendResetPassword');
+const sendVerifiedEmail = require('../utils/sendVerifiedEmail');
 const crypto = require('crypto');
 
 // MongoDB user register handler
@@ -18,23 +19,14 @@ const register = async (req, res, next) => {
 
     await user.save();
 
-    const verifiedUrl = `http://localhost:3000/verifiedEmail/${verifyToken}`;
-
-    const message = `
-    <h1>You have requested a new account</h1>
-    <p>Please go to this link to verify your email</p>
-    <a href='${verifiedUrl}' clicktracking='off'>${verifiedUrl}</a>
-    `;
-
     try {
-      await sendEmail({
-        from: 'Stress Detection',
+      await sendVerifiedEmail({
+        from: 'Stress Analysis',
         to: user.email,
-        subject: 'Password Verify Email',
-        html: message,
+        link: `http://localhost:3000/verifiedEmail/${verifyToken}`,
       });
 
-      res.status(200).json({ success: true, data: 'Email Sent' });
+      res.status(200).json({ success: true, data: 'Email has been sent, please verify' });
     } catch (error) {
       return next(new ErrorResponse('Email could not be send', 500));
     }
@@ -64,7 +56,7 @@ const verifiedEmail = async (req, res, next) => {
 
     await user.save();
 
-    res.status(201).json({ success: true, data: 'Email Verify Success' });
+    res.status(201).json({ success: true, data: 'Email successfully verify' });
   } catch (error) {
     next(error);
   }
@@ -114,20 +106,11 @@ const forgotPassword = async (req, res, next) => {
 
     await user.save();
 
-    const resetUrl = `http://localhost:3000/resetPassword/${resetToken}`;
-
-    const message = `
-    <h1>You have requested a password reset</h1>
-    <p>Please go to this link to reset your password</p>
-    <a href='${resetUrl}' clicktracking='off'>${resetUrl}</a>
-    `;
-
     try {
-      await sendEmail({
-        from: 'Stress Detection',
+      await sendResetPassword({
+        from: 'Stress Analysis',
         to: user.email,
-        subject: 'Password Reset Request',
-        html: message,
+        link: `http://localhost:3000/resetPassword/${resetToken}`,
       });
 
       res.status(200).json({ success: true, data: 'Email Sent' });

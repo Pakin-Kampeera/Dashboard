@@ -9,6 +9,13 @@ const register = async (req, res, next) => {
   const { username, email, password } = req.body;
 
   try {
+    const user = await User.findOne({ email });
+    if (user) {
+      res.status(200).json({ success: true, data: 'This email has already used' });
+    }
+  } catch (error) {}
+
+  try {
     const user = await User.create({
       username,
       email,
@@ -46,10 +53,6 @@ const verifiedEmail = async (req, res, next) => {
   try {
     const user = await User.findOne({ verifiedEmailToken, verifiedEmailExpire: { $gt: Date.now() } });
 
-    if (!user) {
-      return next(new ErrorResponse('Invalid Verified Token', 400));
-    }
-
     user.isVerified = true;
     user.verifiedEmailToken = undefined;
     user.verifiedEmailExpire = undefined;
@@ -78,7 +81,7 @@ const login = async (req, res, next) => {
     }
 
     if (!user.isVerified) {
-      return next(new ErrorResponse('Please verify password', 401));
+      return next(new ErrorResponse('Please verify email', 401));
     }
 
     const isMatch = await user.matchPassword(password);

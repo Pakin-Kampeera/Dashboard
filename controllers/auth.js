@@ -8,14 +8,28 @@ const crypto = require('crypto');
 const register = async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  try {
-    const user = await User.findOne({ email });
-    if (user) {
-      res.status(200).json({ success: true, data: 'This email has already used' });
-    }
-  } catch (error) {}
+  if (!username) {
+    return next(new ErrorResponse('Please provide username', 400));
+  }
+
+  if (!email) {
+    return next(new ErrorResponse('Please provide email', 400));
+  }
+
+  if (!email.includes('@')) {
+    return next(new ErrorResponse(`Please include an '@' in the email`, 400));
+  }
+
+  if (!password) {
+    return next(new ErrorResponse('Please provide password', 400));
+  }
 
   try {
+    const oldUser = await User.findOne({ email });
+    if (oldUser) {
+      return next(new ErrorResponse('This email has already used', 400));
+    }
+
     const user = await User.create({
       username,
       email,
@@ -51,15 +65,23 @@ const verifiedEmail = async (req, res, next) => {
   const verifiedEmailToken = crypto.createHash('sha256').update(req.params.verifiedToken).digest('hex');
 
   try {
-    const user = await User.findOne({ verifiedEmailToken, verifiedEmailExpire: { $gt: Date.now() } });
+    try {
+      const user = await User.findOne({ verifiedEmailToken, verifiedEmailExpire: { $gt: Date.now() } });
 
-    user.isVerified = true;
-    user.verifiedEmailToken = undefined;
-    user.verifiedEmailExpire = undefined;
+      if (!user) {
+        return res.status(200).json({ success: false, data: 'Verify token has been expired, please register again' });
+      }
 
-    await user.save();
+      user.isVerified = true;
+      user.verifiedEmailToken = undefined;
+      user.verifiedEmailExpire = undefined;
 
-    res.status(201).json({ success: true, data: 'Email successfully verify' });
+      await user.save();
+
+      return res.status(201).json({ success: true, data: 'Email successfully verify' });
+    } catch (error) {
+      return res.status(200).json({ success: false, data: 'Verify token has been expired, please register again' });
+    }
   } catch (error) {
     next(error);
   }
@@ -99,8 +121,17 @@ const login = async (req, res, next) => {
 const forgotPassword = async (req, res, next) => {
   const { email } = req.body;
 
+  if (!email) {
+    return next(new ErrorResponse('Please provide email', 400));
+  }
+
+  if (!email.includes('@')) {
+    return next(new ErrorResponse(`Please include an '@' in the email`, 400));
+  }
+
   try {
     const user = await User.findOne({ email });
+
     if (!user) {
       return next(new ErrorResponse('Email could not be sent', 404));
     }
@@ -116,7 +147,7 @@ const forgotPassword = async (req, res, next) => {
         link: `http://localhost:3000/resetPassword/${resetToken}`,
       });
 
-      res.status(200).json({ success: true, data: 'Email Sent' });
+      res.status(200).json({ success: true, data: 'Email has been sent' });
     } catch (error) {
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;

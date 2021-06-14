@@ -91,8 +91,12 @@ const verifiedEmail = async (req, res, next) => {
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return next(new ErrorResponse('Please provide email and password', 400));
+  if (!email) {
+    return next(new ErrorResponse('Please provide email', 400));
+  }
+
+  if (!password) {
+    return next(new ErrorResponse('Please provide password', 400));
   }
 
   try {

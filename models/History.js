@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const moment = require('moment');
 
 mongoose.connect(process.env.MONGO_URI, {
   useCreateIndex: true,
@@ -26,7 +27,10 @@ const History = mongoose.model(
       type: String,
       required: true,
     },
-    time: { type: Date, default: Date.now },
+    time: {
+      type: String,
+      default: moment().subtract(10, 'days').calendar(),
+    },
   }),
   'histories'
 );

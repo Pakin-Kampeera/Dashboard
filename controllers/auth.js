@@ -1,7 +1,6 @@
 const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
-const sendResetPassword = require('../utils/sendResetPassword');
-const sendVerifiedEmail = require('../utils/sendVerifiedEmail');
+const { sendResetPassword, sendVerifiedEmail } = require('../utils/sendEmail');
 const crypto = require('crypto');
 
 // MongoDB user register handler

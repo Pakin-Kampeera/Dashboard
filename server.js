@@ -1,4 +1,4 @@
-require('dotenv').config({ path: './config.env' });
+require('dotenv').config();
 
 // Integrate express and socket.io
 const express = require('express');

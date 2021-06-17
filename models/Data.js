@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const moment = require('moment');
 
 mongoose.connect(process.env.MONGO_URI, {
   useCreateIndex: true,
@@ -22,7 +23,10 @@ const Data = mongoose.model(
     nonStress: {
       type: Number,
     },
-    time: { type: Date, default: Date.now },
+    time: {
+      type: String,
+      default: moment().subtract(10, 'days').calendar(),
+    },
   }),
   'datas'
 );

@@ -1,32 +1,39 @@
+const validator = require('validator');
 const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const { sendResetPassword, sendVerifiedEmail } = require('../utils/sendEmail');
-const crypto = require('crypto');
 
-// MongoDB user register handler
 const register = async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  if (!username) {
+  if (validator.isEmpty(username)) {
     return next(new ErrorResponse('Please provide username', 400));
   }
 
-  if (!email) {
+  if (!validator.isLength(username, { min: 4, max: 32 })) {
+    return next(new ErrorResponse('Username length must between 4-32 characters', 400));
+  }
+
+  if (validator.isEmpty(email)) {
     return next(new ErrorResponse('Please provide email', 400));
   }
 
-  if (!email.includes('@')) {
-    return next(new ErrorResponse(`Please include an '@' in the email`, 400));
+  if (!validator.isEmail(email)) {
+    return next(new ErrorResponse(`Please provide valid email`, 400));
   }
 
-  if (!password) {
+  if (validator.isEmpty(password)) {
     return next(new ErrorResponse('Please provide password', 400));
+  }
+
+  if (!validator.isLength(password, { min: 8 })) {
+    return next(new ErrorResponse('Password length must be at least 8 character', 400));
   }
 
   try {
     const oldUser = await User.findOne({ email });
     if (oldUser) {
-      return next(new ErrorResponse('This email has already used', 400));
+      return next(new ErrorResponse('This email is already used', 400));
     }
 
     const user = await User.create({
@@ -61,7 +68,7 @@ const register = async (req, res, next) => {
 };
 
 const verifiedEmail = async (req, res, next) => {
-  const verifiedEmailToken = crypto.createHash('sha256').update(req.params.verifiedToken).digest('hex');
+  const verifiedEmailToken = req.params.verifiedToken;
 
   try {
     try {
@@ -86,15 +93,14 @@ const verifiedEmail = async (req, res, next) => {
   }
 };
 
-// MongoDB user login handler
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email) {
+  if (validator.isEmpty(email)) {
     return next(new ErrorResponse('Please provide email', 400));
   }
 
-  if (!password) {
+  if (validator.isEmpty(password)) {
     return next(new ErrorResponse('Please provide password', 400));
   }
 
@@ -120,16 +126,15 @@ const login = async (req, res, next) => {
   }
 };
 
-// MongoDB user forgot password handler
 const forgotPassword = async (req, res, next) => {
   const { email } = req.body;
 
-  if (!email) {
+  if (validator.isEmpty(email)) {
     return next(new ErrorResponse('Please provide email', 400));
   }
 
-  if (!email.includes('@')) {
-    return next(new ErrorResponse(`Please include an '@' in the email`, 400));
+  if (validator.isEmail(email)) {
+    return next(new ErrorResponse(`Please provide valid email`, 400));
   }
 
   try {
@@ -164,9 +169,8 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
-// MongoDB user reset password handler
 const resetPassword = async (req, res, next) => {
-  const resetPasswordToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+  const resetPasswordToken = req.params.resetToken;
 
   try {
     const user = await User.findOne({ resetPasswordToken, resetPasswordExpire: { $gt: Date.now() } });

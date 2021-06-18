@@ -13,19 +13,23 @@ const Data = mongoose.model(
   new mongoose.Schema({
     users: {
       type: Number,
+      default: 0,
     },
     comments: {
       type: Number,
+      default: 0,
     },
     stress: {
       type: Number,
+      default: 0,
     },
     nonStress: {
       type: Number,
+      default: 0,
     },
     time: {
       type: String,
-      default: moment().subtract(10, 'days').calendar(),
+      default: moment().format('L'),
     },
   }),
   'datas'

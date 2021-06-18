@@ -7,21 +7,20 @@ const crypto = require('crypto');
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: [true, 'Please provide a username'],
-    minlength: 4,
-    maxlength: 32,
+    required: true,
+    trim: true,
   },
   email: {
     type: String,
-    required: [true, 'Please provide a email'],
+    required: true,
     unique: true,
-    match: [/[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/, 'Please provide a valid email'],
+    trim: true,
   },
   password: {
     type: String,
-    require: [true, 'Please provide a password'],
-    minlength: 8,
+    require: true,
     select: false,
+    trim: true,
   },
   isVerified: {
     type: Boolean,
@@ -58,7 +57,7 @@ UserSchema.methods.getResetPasswordToken = function () {
   this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
   this.resetPasswordExpire = Date.now() + 10 * (60 * 1000);
 
-  return resetToken;
+  return this.resetPasswordToken;
 };
 
 // Assign verify token
@@ -67,9 +66,10 @@ UserSchema.methods.getVerifiedToken = function () {
 
   this.isVerified = false;
   this.verifiedEmailToken = crypto.createHash('sha256').update(verifyToken).digest('hex');
+  console.log(this.verifiedEmailToken);
   this.verifiedEmailExpire = Date.now() + 10 * (60 * 1000);
 
-  return verifyToken;
+  return this.verifiedEmailToken;
 };
 
 // Create user model

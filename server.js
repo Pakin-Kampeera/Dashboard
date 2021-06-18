@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-// Integrate express and socket.io
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
@@ -8,25 +7,26 @@ const io = require('socket.io')(http, { cors: { origin: '*' } });
 
 const connectDB = require('./config/db');
 const cors = require('cors');
-const path = require('path');
 const errorHandler = require('./middleware/error');
 
 const History = require('./models/History');
 const Data = require('./models/Data');
+
+const historyChangeStream = History.watch();
+const dataChangeStream = Data.watch();
+
+app.use(cors());
+app.use(express.json());
 
 // Connect socket
 io.on('connection', () => {
   console.log('Socket connected');
 });
 
-const historyChangeStream = History.watch();
-
 historyChangeStream.on('change', (change) => {
-  console.log(change)
+  console.log(change);
   io.emit('new-History', change.fullDocument);
 });
-
-const dataChangeStream = Data.watch();
 
 dataChangeStream.on('change', (change) => {
   console.log(change);
@@ -39,10 +39,6 @@ dataChangeStream.on('change', (change) => {
   }
 });
 
-app.use(cors());
-app.use(express.json());
-
-// Connect MongoDB
 connectDB();
 
 // Route setup
@@ -62,10 +58,4 @@ process.on('unhandledRejection', (error, promise) => {
   server.close(() => process.exit(1));
 });
 
-// Heroku setup
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '/client/build')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
-  });
-}
+module.exports = app;

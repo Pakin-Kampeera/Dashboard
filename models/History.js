@@ -13,23 +13,19 @@ const History = mongoose.model(
   new mongoose.Schema({
     userId: {
       type: String,
-      required: true,
     },
     text: {
       type: String,
-      required: true,
     },
     labels: {
       type: String,
-      required: true,
     },
     confidence: {
       type: String,
-      required: true,
     },
     time: {
       type: String,
-      default: moment().subtract(10, 'days').calendar(),
+      default: moment().format('L'),
     },
   }),
   'histories'

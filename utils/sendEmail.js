@@ -1,8 +1,12 @@
 const mailgun = require('mailgun-js');
 
+//Test
 const sendResetPassword = (options) => {
-  const mg = mailgun({ apiKey: process.env.MAILGUN_APIKEY, domain: process.env.MAILGUN_DOMAIN });
-  const message = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    const mg = mailgun({
+        apiKey: process.env.MAILGUN_APIKEY,
+        domain: process.env.MAILGUN_DOMAIN
+    });
+    const message = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:v="urn:schemas-microsoft-com:vml"
     xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -147,19 +151,23 @@ const sendResetPassword = (options) => {
     </body>
     </html>`;
 
-  const data = {
-    from: `${options.from} ${process.env.MAILGUN_FROM}`,
-    to: options.to,
-    subject: 'Reset Your Password',
-    html: message,
-  };
+    const data = {
+        from: `${options.from} ${process.env.MAILGUN_FROM}`,
+        to: options.to,
+        subject: 'Reset Your Password',
+        html: message
+    };
 
-  mg.messages().send(data);
+    mg.messages().send(data);
 };
 
+//Test
 const sendVerifiedEmail = (options) => {
-  const mg = mailgun({ apiKey: process.env.MAILGUN_APIKEY, domain: process.env.MAILGUN_DOMAIN });
-  const message = `<!DOCTYPE html>
+    const mg = mailgun({
+        apiKey: process.env.MAILGUN_APIKEY,
+        domain: process.env.MAILGUN_DOMAIN
+    });
+    const message = `<!DOCTYPE html>
       <html style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
       <head>
       <meta name="viewport" content="width=device-width" />
@@ -244,14 +252,14 @@ const sendVerifiedEmail = (options) => {
         </tr></table></body>
       </html>`;
 
-  const data = {
-    from: `${options.from} ${process.env.MAILGUN_FROM}`,
-    to: options.to,
-    subject: 'Email Verification',
-    html: message,
-  };
+    const data = {
+        from: `${options.from} ${process.env.MAILGUN_FROM}`,
+        to: options.to,
+        subject: 'Email Verification',
+        html: message
+    };
 
-  mg.messages().send(data);
+    mg.messages().send(data);
 };
 
 module.exports = { sendResetPassword, sendVerifiedEmail };

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
 
 mongoose.connect(process.env.MONGO_URI, {
     useCreateIndex: true,
@@ -8,31 +7,19 @@ mongoose.connect(process.env.MONGO_URI, {
     useUnifiedTopology: true
 });
 
-const Data = mongoose.model(
+const data = mongoose.model(
     'datas',
-    new mongoose.Schema({
-        users: {
-            type: Number,
-            default: 0
+    new mongoose.Schema(
+        {
+            users: Number,
+            messages: Number,
+            stress: Number,
+            nonStress: Number,
+            cantTell: Number
         },
-        comments: {
-            type: Number,
-            default: 0
-        },
-        stress: {
-            type: Number,
-            default: 0
-        },
-        nonStress: {
-            type: Number,
-            default: 0
-        },
-        time: {
-            type: String,
-            default: moment().format('L')
-        }
-    }),
+        { timestamps: true }
+    ),
     'datas'
 );
 
-module.exports = Data;
+module.exports = data;

@@ -25,7 +25,7 @@ const register = async (req, res, next) => {
             await sendVerifiedEmail({
                 from: 'Stress Analysis',
                 to: user.email,
-                link: `http://localhost:3000/verified-email/${verifyToken}`
+                link: `${process.env.FRONTEND_URL}/verified-email/${verifyToken}`
             });
             res.status(200).json({
                 success: true,
@@ -134,7 +134,7 @@ const forgotPassword = async (req, res, next) => {
             await sendResetPassword({
                 from: 'Stress Analysis',
                 to: user.email,
-                link: `http://localhost:3000/reset-password/${resetToken}`
+                link: `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
             });
 
             res.status(200).json({

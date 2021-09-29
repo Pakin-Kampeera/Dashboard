@@ -7,29 +7,32 @@ mongoose.connect(process.env.MONGO_URI, {
     useUnifiedTopology: true
 });
 
-const History = mongoose.model(
+const history = mongoose.model(
     'histories',
-    new mongoose.Schema({
-        userId: {
-            type: String
+    new mongoose.Schema(
+        {
+            userId: {
+                type: String
+            },
+            username: {
+                type: String
+            },
+            message: {
+                type: String
+            },
+            labels: {
+                type: String
+            },
+            confidence: {
+                type: String
+            },
+            time: {
+                type: String
+            }
         },
-        username: {
-            type: String
-        },
-        message: {
-            type: String
-        },
-        labels: {
-            type: String
-        },
-        confidence: {
-            type: String
-        },
-        time: {
-            type: String
-        }
-    }),
+        { timestamps: true }
+    ),
     'histories'
 );
 
-module.exports = History;
+module.exports = history;

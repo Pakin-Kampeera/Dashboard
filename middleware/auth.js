@@ -23,7 +23,7 @@ const auth = async (req, res, next) => {
         const user = await User.findById(decode.id);
 
         if (!user) {
-            next(new ErrorResponse('No user found with this id', 404));
+            next(new ErrorResponse('No user found, please register', 404));
         }
 
         req.user = user;

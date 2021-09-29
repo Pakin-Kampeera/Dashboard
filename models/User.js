@@ -2,47 +2,44 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const moment = require('moment');
 
-// Create User Schema
-const UserSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        trim: true
+const userSchema = new mongoose.Schema(
+    {
+        username: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true
+        },
+        password: {
+            type: String,
+            require: true,
+            select: false,
+            trim: true
+        },
+        isVerified: {
+            type: Boolean,
+            select: false
+        },
+        role: {
+            type: String,
+            require: true
+        },
+        verifiedEmailToken: String,
+        verifiedEmailExpire: Date,
+        resetPasswordToken: String,
+        resetPasswordExpire: Date
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true
-    },
-    password: {
-        type: String,
-        require: true,
-        select: false,
-        trim: true
-    },
-    isVerified: {
-        type: Boolean,
-        select: false
-    },
-    created: {
-        type: String,
-        default: moment().format('L')
-    },
-    role: {
-        type: String,
-        require: true
-    },
-    verifiedEmailToken: String,
-    verifiedEmailExpire: Date,
-    resetPasswordToken: String,
-    resetPasswordExpire: Date
-});
+    { timestamps: true }
+);
 
 // Salt and Hash password before save
-UserSchema.pre('save', async function (next) {
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) next();
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -50,18 +47,18 @@ UserSchema.pre('save', async function (next) {
 });
 
 // Compare password string with hash password
-UserSchema.methods.matchPassword = async function (password) {
+userSchema.methods.matchPassword = async function (password) {
     const hash = await bcrypt.compare(password, this.password);
     return hash;
 };
 
 // Sign user token
-UserSchema.methods.getSignedToken = function () {
+userSchema.methods.getSignedToken = function () {
     return jwt.sign({ id: this._id }, process.env.JWT_SECRET);
 };
 
 // Assign new token
-UserSchema.methods.getResetPasswordToken = function () {
+userSchema.methods.getResetPasswordToken = function () {
     const resetToken = crypto.randomBytes(20).toString('hex');
 
     this.resetPasswordToken = crypto
@@ -74,7 +71,7 @@ UserSchema.methods.getResetPasswordToken = function () {
 };
 
 // Assign verify token
-UserSchema.methods.getVerifiedToken = function () {
+userSchema.methods.getVerifiedToken = function () {
     const verifyToken = crypto.randomBytes(20).toString('hex');
 
     this.role = 'user';
@@ -89,6 +86,6 @@ UserSchema.methods.getVerifiedToken = function () {
 };
 
 // Create user model
-const User = mongoose.model('User', UserSchema);
+const user = mongoose.model('User', userSchema);
 
-module.exports = User;
+module.exports = user;
